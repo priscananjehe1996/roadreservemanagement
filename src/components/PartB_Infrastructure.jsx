@@ -16,7 +16,28 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
           <input type="text" name="physicallocation" value={formData.physicallocation || ''} onChange={handleChange} required />
         </div>
         <div className="form-group">
-          <label>GIS Coordinates (Lat, Long)</label>
+          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>GIS Coordinates (Lat, Long)</span>
+            <button 
+              type="button" 
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      const coords = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
+                      handleChange({ target: { name: 'giscoordinates', value: coords } });
+                    },
+                    (error) => alert('Unable to retrieve your location. Please ensure location services are enabled.')
+                  );
+                } else {
+                  alert('Geolocation is not supported by your browser');
+                }
+              }}
+              style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+            >
+              📍 Auto Pick Location
+            </button>
+          </label>
           <input type="text" name="giscoordinates" value={formData.giscoordinates || ''} onChange={handleChange} required placeholder="-1.234, 32.345" />
         </div>
       </div>

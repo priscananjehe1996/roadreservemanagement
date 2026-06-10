@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function PartD_Declaration({ formData, handleChange }) {
+  useEffect(() => {
+    if (!formData.daysdate) {
+      const now = new Date();
+      const localDateTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      handleChange({ target: { name: 'daysdate', value: localDateTime } });
+    }
+  }, [formData.daysdate, handleChange]);
+
   return (
     <div className="form-section">
       <h2>PART D: Declaration</h2>
@@ -36,8 +44,8 @@ export default function PartD_Declaration({ formData, handleChange }) {
 
       <div className="form-row">
         <div className="form-group">
-          <label>Date</label>
-          <input type="date" name="daysdate" value={formData.daysdate || ''} onChange={handleChange} required />
+          <label>Date & Time</label>
+          <input type="datetime-local" name="daysdate" value={formData.daysdate || ''} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Place</label>
