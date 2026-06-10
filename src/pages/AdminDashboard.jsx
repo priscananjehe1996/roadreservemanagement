@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import IntelligenceCenter from '../components/IntelligenceCenter';
-import logoImg from '../assets/mowt_logo.png';
+import logoImg from '../assets/mowt.jpg';
 
 export default function AdminDashboard() {
   const [applications, setApplications] = useState([]);
@@ -400,7 +400,7 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="admin-sidebar-logo">
-          <img src={logoImg} alt="MoWT Logo" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+          <img src={logoImg} alt="MoWT Logo" style={{ height: '28px', width: 'auto', maxWidth: '40px', objectFit: 'contain', borderRadius: '4px' }} />
           MoWT System
         </div>
         

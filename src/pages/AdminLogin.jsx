@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import highwayImg from '../assets/highway.png';
-import logoImg from '../assets/mowt_logo.png';
+import logoImg from '../assets/mowt.jpg';
 
 const HARDCODED_PASSWORD = 'admin';
 
@@ -84,7 +84,7 @@ export default function AdminLogin() {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <img src={logoImg} alt="MoWT Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', boxShadow: '0 0 20px rgba(56,189,248,0.2)' }} />
+          <img src={logoImg} alt="MoWT Logo" style={{ height: '80px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px' }} />
           <div>
             <h1 style={{ 
               fontSize: '1.8rem', 
