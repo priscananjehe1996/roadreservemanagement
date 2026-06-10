@@ -7,6 +7,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import IntelligenceCenter from '../components/IntelligenceCenter';
+import logoImg from '../assets/mowt_logo.png';
 
 export default function AdminDashboard() {
   const [applications, setApplications] = useState([]);
@@ -148,7 +149,7 @@ export default function AdminDashboard() {
     const doc = new jsPDF('landscape');
     doc.setFontSize(20);
     doc.setTextColor(56, 189, 248);
-    doc.text('NIDS - Intelligence Database Report', 14, 22);
+    doc.text('MoWT - Roads Reserve Database Report', 14, 22);
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
@@ -179,7 +180,7 @@ export default function AdminDashboard() {
         }
       }
     });
-    doc.save('nids_database_report.pdf');
+    doc.save('mowt_database_report.pdf');
   };
 
   const exportExcel = async () => {
@@ -220,7 +221,7 @@ export default function AdminDashboard() {
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), 'nids_advanced_report.xlsx');
+    saveAs(new Blob([buffer]), 'mowt_advanced_report.xlsx');
   };
 
   const chartData = useMemo(() => {
@@ -247,7 +248,7 @@ export default function AdminDashboard() {
     if (recentlyApproved > 0) {
       notifs.push({ id: 2, type: 'success', text: `${recentlyApproved} total applications have been approved.`, time: 'System' });
     }
-    notifs.push({ id: 3, type: 'info', text: 'NIDS Secure Server connection established.', time: 'System' });
+    notifs.push({ id: 3, type: 'info', text: 'MoWT Secure Server connection established.', time: 'System' });
     return notifs;
   }, [pendingCount, applications]);
 
@@ -255,8 +256,8 @@ export default function AdminDashboard() {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
         <div>
-          <h2 style={{ fontSize: '2rem', margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>Dashboard Overview</h2>
-          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Welcome to the NIDS Central Server.</p>
+          <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>Uganda National Roads Reserve Applications</h2>
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Ministry of Works and Transport - Department of National Roads</p>
         </div>
       </div>
 
@@ -399,8 +400,8 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="admin-sidebar-logo">
-          <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, var(--accent-primary), #8B5CF6)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>N</div>
-          NIDS SYSTEM
+          <img src={logoImg} alt="MoWT Logo" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+          MoWT System
         </div>
         
         <div className="admin-sidebar-nav">
@@ -434,7 +435,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="admin-header" style={{ position: 'relative' }}>
+        <div className="admin-header" style={{ position: 'relative', zIndex: 100 }}>
           <input type="text" className="admin-search" placeholder="Search system resources..." />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', position: 'relative' }}>
@@ -458,7 +459,7 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Admin Root</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>admin@nids.gov</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>admin@mowt.go.ug</div>
               </div>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>AR</div>
               <button onClick={handleSignOut} style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', marginLeft: '0.5rem', fontSize: '1.2rem' }} title="Sign Out">⏏</button>
