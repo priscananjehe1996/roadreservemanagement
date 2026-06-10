@@ -163,82 +163,109 @@ export default function AdminDashboard() {
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF('landscape');
-    doc.setFontSize(20);
-    doc.setTextColor(56, 189, 248);
-    doc.text('MoWT - Roads Reserve Database Report', 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-    
-    const tableData = sortedApplications.map(app => [
-      app.id,
-      new Date(app.created_at).toLocaleDateString(),
-      app.applicant_type || 'N/A',
-      app.registeredname || 'N/A',
-      app.activitiesundertaken || 'N/A',
-      app.physicallocation || 'N/A',
-      app.status || 'Pending'
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [['ID', 'Date', 'Type', 'Applicant', 'Activity', 'Location', 'Status']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [245, 247, 250] },
-      styles: { fontSize: 9, cellPadding: 4 },
-      didParseCell: function(data) {
-        if (data.section === 'body' && data.column.index === 6) { 
-          if (data.cell.raw === 'Approved') data.cell.styles.textColor = [16, 185, 129];
-          else if (data.cell.raw === 'Rejected') data.cell.styles.textColor = [239, 68, 68];
-          else data.cell.styles.textColor = [245, 158, 11];
-        }
+    const generate = (imageElement) => {
+      const doc = new jsPDF('landscape');
+      
+      if (imageElement) {
+        doc.addImage(imageElement, 'JPEG', 14, 10, 16, 16);
+        doc.setFontSize(20);
+        doc.setTextColor(56, 189, 248);
+        doc.text('MoWT - Roads Reserve Database Report', 34, 20);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 34, 27);
+      } else {
+        doc.setFontSize(20);
+        doc.setTextColor(56, 189, 248);
+        doc.text('MoWT - Roads Reserve Database Report', 14, 22);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
       }
-    });
-    doc.save('mowt_database_report.pdf');
+      
+      const tableData = sortedApplications.map(app => [
+        app.id,
+        new Date(app.created_at).toLocaleDateString(),
+        app.applicant_type || 'Unspecified',
+        app.registeredname || 'Unspecified',
+        app.activitiesundertaken || 'Unspecified',
+        app.physicallocation || 'Unspecified',
+        app.status || 'Pending'
+      ]);
+
+      autoTable(doc, {
+        startY: imageElement ? 35 : 40,
+        head: [['ID', 'Date', 'Type', 'Applicant', 'Activity', 'Location', 'Status']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        styles: { fontSize: 9, cellPadding: 4 },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 6) { 
+            if (data.cell.raw === 'Approved') data.cell.styles.textColor = [16, 185, 129];
+            else if (data.cell.raw === 'Rejected') data.cell.styles.textColor = [239, 68, 68];
+            else data.cell.styles.textColor = [245, 158, 11];
+          }
+        }
+      });
+      doc.save('mowt_database_report.pdf');
+    };
+
+    const img = new window.Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = logoImg;
+    img.onload = () => generate(img);
+    img.onerror = () => generate(null);
   };
 
   const exportExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const dataSheet = workbook.addWorksheet('Raw Data', { views: [{ state: 'frozen', ySplit: 1 }] });
-    
-    dataSheet.columns = [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Date', key: 'date', width: 15 },
-      { header: 'Type', key: 'type', width: 15 },
-      { header: 'Applicant', key: 'applicant', width: 30 },
-      { header: 'TIN', key: 'tin', width: 15 },
-      { header: 'Activity', key: 'activity', width: 30 },
-      { header: 'Location', key: 'location', width: 30 },
-      { header: 'Material Used', key: 'material', width: 20 },
-      { header: 'Attachments', key: 'attachments', width: 15 },
-      { header: 'Status', key: 'status', width: 15 }
-    ];
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const dataSheet = workbook.addWorksheet('Raw Data', { views: [{ state: 'frozen', ySplit: 1 }] });
+      
+      dataSheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
+        { header: 'Date', key: 'date', width: 15 },
+        { header: 'Type', key: 'type', width: 15 },
+        { header: 'Applicant', key: 'applicant', width: 30 },
+        { header: 'TIN', key: 'tin', width: 15 },
+        { header: 'Email', key: 'email', width: 25 },
+        { header: 'Activity', key: 'activity', width: 30 },
+        { header: 'Location', key: 'location', width: 30 },
+        { header: 'Material Used', key: 'material', width: 20 },
+        { header: 'Attachments', key: 'attachments', width: 15 },
+        { header: 'Status', key: 'status', width: 15 }
+      ];
 
-    dataSheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-    });
-
-    sortedApplications.forEach(app => {
-      dataSheet.addRow({
-        id: app.id,
-        date: new Date(app.created_at).toLocaleDateString(),
-        type: app.applicant_type,
-        applicant: app.registeredname,
-        tin: app.tin,
-        activity: app.activitiesundertaken,
-        location: app.physicallocation,
-        material: app.materialused,
-        attachments: app.attachment_urls ? app.attachment_urls.length : 0,
-        status: app.status || 'Pending'
+      dataSheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
       });
-    });
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), 'mowt_advanced_report.xlsx');
+      sortedApplications.forEach(app => {
+        dataSheet.addRow({
+          id: app.id,
+          date: new Date(app.created_at).toLocaleDateString(),
+          type: app.applicant_type || 'Unspecified',
+          applicant: app.registeredname || 'Unspecified',
+          tin: app.tin || 'Unspecified',
+          email: app.emailaddress || 'Unspecified',
+          activity: app.activitiesundertaken || 'Unspecified',
+          location: app.physicallocation || 'Unspecified',
+          material: app.materialused || 'Unspecified',
+          attachments: app.attachment_urls ? app.attachment_urls.length : 0,
+          status: app.status || 'Pending'
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, 'mowt_database_report.xlsx');
+    } catch (err) {
+      console.error("Excel generation error:", err);
+      alert("There was an issue generating the Excel file.");
+    }
   };
 
   // 1. Clustered Column (Time vs Status)
