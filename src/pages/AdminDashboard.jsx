@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -240,18 +240,56 @@ export default function AdminDashboard() {
     saveAs(new Blob([buffer]), 'mowt_advanced_report.xlsx');
   };
 
-  const chartData = useMemo(() => {
-    if (applications.length === 0) {
-      return [ { name: 'Jan', count: 0 }, { name: 'Feb', count: 0 }, { name: 'Mar', count: 0 } ];
-    }
+  // 1. Clustered Column (Time vs Status)
+  const monthlyClusteredData = useMemo(() => {
+    if (applications.length === 0) return [];
     return applications.reduce((acc, app) => {
       const month = new Date(app.created_at).toLocaleString('default', { month: 'short' });
-      const existing = acc.find(item => item.name === month);
-      if (existing) existing.count += 1;
-      else acc.push({ name: month, count: 1 });
+      let existing = acc.find(item => item.name === month);
+      if (!existing) {
+        existing = { name: month, Approved: 0, Pending: 0, Rejected: 0 };
+        acc.push(existing);
+      }
+      const status = app.status || 'Pending';
+      if (existing[status] !== undefined) existing[status] += 1;
       return acc;
     }, []);
   }, [applications]);
+
+  // 2. Doughnut (Applicant Types)
+  const typeData = useMemo(() => {
+    if (applications.length === 0) return [];
+    const counts = applications.reduce((acc, app) => {
+      const type = app.applicant_type || 'Unknown';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.keys(counts).map(k => ({ name: k, value: counts[k] }));
+  }, [applications]);
+
+  // 3. Pie (Status Distribution)
+  const statusData = useMemo(() => {
+    if (applications.length === 0) return [];
+    const counts = applications.reduce((acc, app) => {
+      const status = app.status || 'Pending';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.keys(counts).map(k => ({ name: k, value: counts[k] }));
+  }, [applications]);
+
+  // 4. Bar (Locations)
+  const locationData = useMemo(() => {
+    if (applications.length === 0) return [];
+    const counts = applications.reduce((acc, app) => {
+      const loc = app.physicallocation || 'Unknown';
+      acc[loc] = (acc[loc] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a,b)=> b.count - a.count).slice(0, 5);
+  }, [applications]);
+
+  const COLORS = ['#38BDF8', '#818CF8', '#34D399', '#FBBF24', '#F87171'];
 
   const pendingCount = applications.filter(a => (a.status || 'Pending') === 'Pending').length;
 
@@ -311,24 +349,75 @@ export default function AdminDashboard() {
 
       </div>
 
-      <div className="glass-panel">
-        <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Data Ingestion Over Time</h3>
-        <div style={{ width: '100%', height: 350 }}>
-          <ResponsiveContainer>
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(56, 189, 248, 0.1)" vertical={false} />
-              <XAxis dataKey="name" stroke="var(--text-secondary)" tickLine={false} axisLine={false} />
-              <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} allowDecimals={false} />
-              <RechartsTooltip cursor={{ fill: 'rgba(56, 189, 248, 0.05)' }} contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
-              <Bar dataKey="count" fill="url(#colorUv)" radius={[4, 4, 0, 0]} barSize={40} />
-              <defs>
-                <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#38BDF8" stopOpacity={1}/>
-                  <stop offset="100%" stopColor="#0EA5E9" stopOpacity={0.2}/>
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+        
+        {/* Chart 1: Clustered Column */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Monthly Applications (Clustered)</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart data={monthlyClusteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} allowDecimals={false} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Legend wrapperStyle={{ fontSize: '0.85rem' }} />
+                <Bar dataKey="Pending" fill="#FCD34D" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Approved" fill="#10B981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Rejected" fill="#EF4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Chart 2: Doughnut */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Applicant Types (Doughnut)</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={typeData} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value">
+                  {typeData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                </Pie>
+                <RechartsTooltip contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Legend wrapperStyle={{ fontSize: '0.85rem' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Chart 3: Simulated 3D Pie */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Application Status (3D Pie Style)</h3>
+          <div style={{ width: '100%', height: 300, filter: 'drop-shadow(0px 15px 5px rgba(0,0,0,0.5)) drop-shadow(0px -5px 15px rgba(255,255,255,0.05))' }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={statusData} cx="50%" cy="50%" outerRadius={100} dataKey="value" stroke="rgba(0,0,0,0.5)" strokeWidth={2}>
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.name === 'Approved' ? '#10B981' : entry.name === 'Pending' ? '#FCD34D' : entry.name === 'Rejected' ? '#EF4444' : COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Legend wrapperStyle={{ fontSize: '0.85rem' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Chart 4: Horizontal Bar */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Top Locations (Bar Chart)</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart layout="vertical" data={locationData} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={true} vertical={false} />
+                <XAxis type="number" stroke="var(--text-secondary)" tickLine={false} axisLine={false} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" tickLine={false} axisLine={false} width={100} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Bar dataKey="count" fill="#818CF8" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </>
