@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import highwayImg from '../assets/highway.png';
+import logoImg from '../assets/mowt_logo.png';
 
 const HARDCODED_PASSWORD = 'admin';
 
@@ -27,13 +29,12 @@ export default function AdminLogin() {
       fontFamily: 'Inter, sans-serif'
     }}>
       
-      {/* Left Side - 3D Graphic */}
+      {/* Left Side - Animated Highway Graphic */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
         borderRight: '1px solid rgba(56, 189, 248, 0.1)',
         position: 'relative',
         overflow: 'hidden'
@@ -44,7 +45,28 @@ export default function AdminLogin() {
           backgroundImage: 'linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px)',
           backgroundSize: '30px 30px', zIndex: 0
         }}></div>
-        <img src="/isometric-server.png" alt="Server Graphic" style={{ maxWidth: '80%', zIndex: 1, filter: 'drop-shadow(0 0 40px rgba(56, 189, 248, 0.3))' }} />
+        
+        <img 
+          src={highwayImg} 
+          alt="Highway Graphic" 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover', 
+            zIndex: 1, 
+            opacity: 0.8,
+            animation: 'panImage 30s ease-in-out infinite alternate' 
+          }} 
+        />
+        <style>{`
+          @keyframes panImage {
+            0% { transform: scale(1.05) translateX(-2%); }
+            100% { transform: scale(1.05) translateX(2%); }
+          }
+        `}</style>
+        
+        {/* Dark overlay to blend edges */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, transparent 40%, #050B14 100%)', zIndex: 2 }}></div>
       </div>
 
       {/* Right Side - Login Form */}
@@ -53,7 +75,7 @@ export default function AdminLogin() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '10%',
+        padding: '8% 10%',
         position: 'relative'
       }}>
         
@@ -61,17 +83,25 @@ export default function AdminLogin() {
           &larr; Return to Application
         </Link>
 
-        <h1 style={{ 
-          fontSize: '3rem', 
-          margin: '0 0 2rem 0', 
-          fontWeight: 700, 
-          letterSpacing: '2px',
-          color: 'var(--text-primary)'
-        }}>
-          NIDS<span style={{ color: 'var(--accent-primary)' }}>.</span>
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <img src={logoImg} alt="MoWT Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', boxShadow: '0 0 20px rgba(56,189,248,0.2)' }} />
+          <div>
+            <h1 style={{ 
+              fontSize: '1.8rem', 
+              margin: '0', 
+              fontWeight: 700, 
+              color: 'var(--text-primary)',
+              lineHeight: 1.2
+            }}>
+              Uganda National Roads Reserve Applications
+            </h1>
+          </div>
+        </div>
         
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Network Intelligence & Database System</p>
+        <div style={{ color: 'var(--accent-primary)', marginBottom: '3rem', fontSize: '1rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Ministry of Works and Transport <br />
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>Department of National Roads</span>
+        </div>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '400px' }}>
           
