@@ -14,10 +14,10 @@ export default function ApplicationForm() {
   const totalSteps = 5;
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : type === 'file' ? files : value
     }));
   };
 
@@ -38,14 +38,48 @@ export default function ApplicationForm() {
     }
   };
 
+  const uploadAttachments = async (files) => {
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      
+      const { error } = await supabase.storage
+        .from('application-attachments')
+        .upload(fileName, file);
+
+      if (error) throw error;
+      
+      const { data } = supabase.storage
+        .from('application-attachments')
+        .getPublicUrl(fileName);
+        
+      urls.push(data.publicUrl);
+    }
+    return urls;
+  };
+
   const submitForm = async () => {
     setStatus('submitting');
     setErrorMessage('');
 
     try {
-      const { data, error } = await supabase
+      let attachmentUrls = [];
+      if (formData.attachments && formData.attachments.length > 0) {
+        attachmentUrls = await uploadAttachments(formData.attachments);
+      }
+
+      const finalData = { ...formData };
+      delete finalData.attachments;
+      
+      if (attachmentUrls.length > 0) {
+        finalData.attachment_urls = attachmentUrls;
+      }
+
+      const { error } = await supabase
         .from('applications')
-        .insert([formData]);
+        .insert([finalData]);
 
       if (error) throw new Error(error.message);
 

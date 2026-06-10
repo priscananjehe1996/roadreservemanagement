@@ -114,20 +114,30 @@ export default function AdminDashboard() {
     }, {});
   }, [sortedApplications]);
 
+  const applicantTypeSummary = useMemo(() => {
+    return sortedApplications.reduce((acc, curr) => {
+      const type = curr.applicant_type || 'Unspecified';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+  }, [sortedApplications]);
+
   // --- Export Logic ---
   const exportCSV = () => {
     if (sortedApplications.length === 0) return;
-    const headers = ['ID', 'Date', 'Applicant', 'TIN', 'Email', 'Activity', 'Location', 'Material', 'Status'];
+    const headers = ['ID', 'Date', 'Type', 'Applicant', 'TIN', 'Email', 'Activity', 'Location', 'Material', 'Status', 'Attachments'];
     const rows = sortedApplications.map(app => [
       app.id,
       new Date(app.created_at).toLocaleDateString(),
+      app.applicant_type || '',
       `"${app.registeredname || ''}"`,
       app.tin || '',
       app.emailaddress || '',
       `"${app.activitiesundertaken || ''}"`,
       `"${app.physicallocation || ''}"`,
       app.materialused || '',
-      app.status || 'Pending'
+      app.status || 'Pending',
+      app.attachment_urls ? app.attachment_urls.length : 0
     ]);
     const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -148,8 +158,8 @@ export default function AdminDashboard() {
     const tableData = sortedApplications.map(app => [
       app.id,
       new Date(app.created_at).toLocaleDateString(),
+      app.applicant_type || 'N/A',
       app.registeredname || 'N/A',
-      app.tin || 'N/A',
       app.activitiesundertaken || 'N/A',
       app.physicallocation || 'N/A',
       app.status || 'Pending'
@@ -157,7 +167,7 @@ export default function AdminDashboard() {
 
     doc.autoTable({
       startY: 40,
-      head: [['ID', 'Date', 'Applicant', 'TIN', 'Activity', 'Location', 'Status']],
+      head: [['ID', 'Date', 'Type', 'Applicant', 'Activity', 'Location', 'Status']],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
@@ -183,20 +193,23 @@ export default function AdminDashboard() {
     const columns = [
       { header: 'ID', key: 'id', width: 10 },
       { header: 'Date', key: 'date', width: 15 },
+      { header: 'Type', key: 'type', width: 15 },
       { header: 'Applicant', key: 'applicant', width: 30 },
       { header: 'TIN', key: 'tin', width: 15 },
       { header: 'Activity', key: 'activity', width: 30 },
       { header: 'Location', key: 'location', width: 30 },
       { header: 'Material Used', key: 'material', width: 20 },
+      { header: 'Attachments', key: 'attachments', width: 15 },
       { header: 'Status', key: 'status', width: 15 }
     ];
     dataSheet.columns = columns;
 
     // Excel Comments (Notes) that don't break
     dataSheet.getCell('A1').note = 'System generated unique identifier';
-    dataSheet.getCell('C1').note = 'Registered Name of the Applicant or Entity';
-    dataSheet.getCell('D1').note = 'Tax Identification Number';
-    dataSheet.getCell('H1').note = 'Current Processing Status (Pending/Approved/Rejected)';
+    dataSheet.getCell('C1').note = 'Type of Applicant';
+    dataSheet.getCell('D1').note = 'Registered Name of the Applicant or Entity';
+    dataSheet.getCell('E1').note = 'Tax Identification Number';
+    dataSheet.getCell('J1').note = 'Current Processing Status (Pending/Approved/Rejected)';
 
     dataSheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -208,11 +221,13 @@ export default function AdminDashboard() {
       dataSheet.addRow({
         id: app.id,
         date: new Date(app.created_at).toLocaleDateString(),
+        type: app.applicant_type,
         applicant: app.registeredname,
         tin: app.tin,
         activity: app.activitiesundertaken,
         location: app.physicallocation,
         material: app.materialused,
+        attachments: app.attachment_urls ? app.attachment_urls.length : 0,
         status: app.status || 'Pending'
       });
     });
@@ -235,13 +250,13 @@ export default function AdminDashboard() {
     summarySheet.getCell('B4').value = { formula: `COUNTA('Raw Data'!A2:A10000)` };
 
     summarySheet.getCell('A5').value = 'Pending Review';
-    summarySheet.getCell('B5').value = { formula: `COUNTIF('Raw Data'!H:H, "Pending")` };
+    summarySheet.getCell('B5').value = { formula: `COUNTIF('Raw Data'!J:J, "Pending")` };
 
     summarySheet.getCell('A6').value = 'Approved';
-    summarySheet.getCell('B6').value = { formula: `COUNTIF('Raw Data'!H:H, "Approved")` };
+    summarySheet.getCell('B6').value = { formula: `COUNTIF('Raw Data'!J:J, "Approved")` };
 
     summarySheet.getCell('A7').value = 'Rejected';
-    summarySheet.getCell('B7').value = { formula: `COUNTIF('Raw Data'!H:H, "Rejected")` };
+    summarySheet.getCell('B7').value = { formula: `COUNTIF('Raw Data'!J:J, "Rejected")` };
 
     ['B4','B5','B6','B7'].forEach(cell => {
       summarySheet.getCell(cell).alignment = { horizontal: 'right' };
@@ -366,6 +381,18 @@ export default function AdminDashboard() {
           <h3 style={{ margin: 0 }}>Categorical Summaries</h3>
           
           <div>
+            <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Applicant Type Breakdown</h4>
+            {Object.keys(applicantTypeSummary).length === 0 ? <p style={{fontSize: '0.85rem'}}>No data</p> : 
+              Object.entries(applicantTypeSummary).map(([key, val]) => (
+                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '0.9rem' }}>{key}</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{val}</span>
+                </div>
+              ))
+            }
+          </div>
+
+          <div>
             <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Material Used Breakdown</h4>
             {Object.keys(materialSummary).length === 0 ? <p style={{fontSize: '0.85rem'}}>No data</p> : 
               Object.entries(materialSummary).map(([key, val]) => (
@@ -407,9 +434,11 @@ export default function AdminDashboard() {
                 <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('id')}>ID {getSortIcon('id')}</th>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('created_at')}>Date {getSortIcon('created_at')}</th>
+                  <th style={{ padding: '1rem' }} onClick={() => requestSort('applicant_type')}>Type {getSortIcon('applicant_type')}</th>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('registeredname')}>Applicant {getSortIcon('registeredname')}</th>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('activitiesundertaken')}>Activity {getSortIcon('activitiesundertaken')}</th>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('physicallocation')}>Location {getSortIcon('physicallocation')}</th>
+                  <th style={{ padding: '1rem' }}>Docs</th>
                   <th style={{ padding: '1rem' }} onClick={() => requestSort('status')}>Status {getSortIcon('status')}</th>
                 </tr>
               </thead>
@@ -420,9 +449,27 @@ export default function AdminDashboard() {
                       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                     <td style={{ padding: '1rem' }}>#{app.id}</td>
                     <td style={{ padding: '1rem' }}>{new Date(app.created_at).toLocaleDateString()}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{ padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', fontSize: '0.75rem' }}>
+                        {app.applicant_type || 'N/A'}
+                      </span>
+                    </td>
                     <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{app.registeredname || 'N/A'}</td>
                     <td style={{ padding: '1rem' }}>{app.activitiesundertaken || 'N/A'}</td>
                     <td style={{ padding: '1rem' }}>{app.physicallocation || 'N/A'}</td>
+                    <td style={{ padding: '1rem' }}>
+                      {app.attachment_urls && app.attachment_urls.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', maxWidth: '100px' }}>
+                          {app.attachment_urls.map((url, i) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer" title="View Document">
+                              <div style={{ width: '24px', height: '24px', background: 'var(--accent-primary)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', textDecoration: 'none' }}>
+                                📄
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>None</span>}
+                    </td>
                     <td style={{ padding: '1rem' }}>
                       <span style={{ padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', background: app.status === 'Approved' ? 'rgba(16, 185, 129, 0.2)' : app.status === 'Rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: app.status === 'Approved' ? '#10b981' : app.status === 'Rejected' ? '#ef4444' : '#fcd34d' }}>
                         {app.status || 'Pending'}

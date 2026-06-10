@@ -9,6 +9,19 @@ export default function PartA_Applicant({ formData, handleChange }) {
         <label>Registered Name</label>
         <input type="text" name="registeredname" value={formData.registeredname || ''} onChange={handleChange} required placeholder="Enter registered name" />
       </div>
+
+      <div className="form-group">
+        <label>Applicant Type</label>
+        <select name="applicant_type" value={formData.applicant_type || ''} onChange={handleChange} required>
+          <option value="">Select applicant type...</option>
+          <option value="Government">Government</option>
+          <option value="MDA">MDA (Ministries, Departments, and Agencies)</option>
+          <option value="Business">Business / Corporate</option>
+          <option value="NGO">NGO</option>
+          <option value="Personal">Personal / Individual</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
       
       <div className="form-row">
         <div className="form-group">

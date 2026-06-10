@@ -11,8 +11,26 @@ export default function PartD_Declaration({ formData, handleChange }) {
 
   return (
     <div className="form-section">
-      <h2>PART D: Declaration</h2>
-      
+      <h2>PART D: Declaration & Attachments</h2>
+
+      <div className="form-group" style={{ marginBottom: '2rem', padding: '1.5rem', border: '2px dashed var(--border-color)', borderRadius: '1rem', background: 'rgba(255,255,255,0.02)' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Supporting Documents</h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Attach any relevant images, site plans, ID copies, or billboard mockups.</p>
+        <input 
+          type="file" 
+          name="attachments" 
+          onChange={handleChange} 
+          multiple 
+          accept="image/*"
+          style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-primary)' }}
+        />
+        {formData.attachments && formData.attachments.length > 0 && (
+          <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginTop: '0.5rem' }}>
+            {formData.attachments.length} file(s) selected
+          </p>
+        )}
+      </div>
+
       <div className="note-box" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', borderLeftColor: 'var(--success)' }}>
         <div className="checkbox-group">
           <input type="checkbox" id="declaration" name="declaration_agreed" checked={formData.declaration_agreed || false} onChange={(e) => handleChange({ target: { name: 'declaration_agreed', value: e.target.checked } })} required />
