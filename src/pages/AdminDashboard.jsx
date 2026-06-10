@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const COLORS = ['#fcd34d', '#10b981', '#ef4444']; // Pending (Yellow), Approved (Green), Rejected (Red)
 
@@ -123,20 +123,26 @@ export default function AdminDashboard() {
   }, [sortedApplications]);
 
   // --- Export Logic ---
+  const escapeCSV = (val) => {
+    if (val == null) return '""';
+    const str = String(val).replace(/"/g, '""').replace(/[\n\r]+/g, ' ');
+    return `"${str}"`;
+  };
+
   const exportCSV = () => {
     if (sortedApplications.length === 0) return;
     const headers = ['ID', 'Date', 'Type', 'Applicant', 'TIN', 'Email', 'Activity', 'Location', 'Material', 'Status', 'Attachments'];
     const rows = sortedApplications.map(app => [
       app.id,
       new Date(app.created_at).toLocaleDateString(),
-      app.applicant_type || '',
-      `"${app.registeredname || ''}"`,
-      app.tin || '',
-      app.emailaddress || '',
-      `"${app.activitiesundertaken || ''}"`,
-      `"${app.physicallocation || ''}"`,
-      app.materialused || '',
-      app.status || 'Pending',
+      escapeCSV(app.applicant_type),
+      escapeCSV(app.registeredname),
+      escapeCSV(app.tin),
+      escapeCSV(app.emailaddress),
+      escapeCSV(app.activitiesundertaken),
+      escapeCSV(app.physicallocation),
+      escapeCSV(app.materialused),
+      escapeCSV(app.status || 'Pending'),
       app.attachment_urls ? app.attachment_urls.length : 0
     ]);
     const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -165,7 +171,7 @@ export default function AdminDashboard() {
       app.status || 'Pending'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 40,
       head: [['ID', 'Date', 'Type', 'Applicant', 'Activity', 'Location', 'Status']],
       body: tableData,
@@ -204,12 +210,7 @@ export default function AdminDashboard() {
     ];
     dataSheet.columns = columns;
 
-    // Excel Comments (Notes) that don't break
-    dataSheet.getCell('A1').note = 'System generated unique identifier';
-    dataSheet.getCell('C1').note = 'Type of Applicant';
-    dataSheet.getCell('D1').note = 'Registered Name of the Applicant or Entity';
-    dataSheet.getCell('E1').note = 'Tax Identification Number';
-    dataSheet.getCell('J1').note = 'Current Processing Status (Pending/Approved/Rejected)';
+    // Removed cell.note assignments as they corrupt MS Excel files in exceljs
 
     dataSheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
