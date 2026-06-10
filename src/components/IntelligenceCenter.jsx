@@ -85,8 +85,8 @@ export default function IntelligenceCenter({ applications }) {
   };
 
   return (
-    <div style={{ background: '#0f172a', padding: '2rem', borderRadius: '1rem', border: '1px solid #334155', color: '#10b981', fontFamily: 'monospace' }}>
-      <h2 style={{ color: '#34d399', borderBottom: '1px solid #064e3b', paddingBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <div className="glass-panel">
+      <h2 style={{ color: '#34d399', borderBottom: '1px solid rgba(56, 189, 248, 0.2)', paddingBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 0 }}>
         <span>👁️</span> Central Intelligence Engine
       </h2>
 
