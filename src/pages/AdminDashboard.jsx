@@ -7,6 +7,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import IntelligenceCenter from '../components/IntelligenceCenter';
+import ApprovalsWorkflow from '../components/ApprovalsWorkflow';
 import logoImg from '../assets/mowt.jpg';
 
 export default function AdminDashboard() {
@@ -66,6 +67,21 @@ export default function AdminDashboard() {
     
     setLoading(false);
   }
+
+  const handleUpdateApplication = async (id, updates) => {
+    const { error } = await supabase
+      .from('applications')
+      .update(updates)
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating application:', error);
+      alert('Failed to update application. Did you add the audit_logs column to Supabase?');
+    } else {
+      // Optimistic UI update
+      setApplications(prev => prev.map(app => app.id === id ? { ...app, ...updates } : app));
+    }
+  };
 
   const sortedApplications = useMemo(() => {
     let sortableItems = [...applications];
@@ -408,6 +424,9 @@ export default function AdminDashboard() {
           <div className={`admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
             <span>📊</span> Dashboard
           </div>
+          <div className={`admin-nav-item ${activeTab === 'approvals' ? 'active' : ''}`} onClick={() => setActiveTab('approvals')}>
+            <span>✅</span> Approvals
+          </div>
           <div className={`admin-nav-item ${activeTab === 'intelligence' ? 'active' : ''}`} onClick={() => setActiveTab('intelligence')}>
             <span>👁️</span> Intelligence
           </div>
@@ -529,6 +548,7 @@ export default function AdminDashboard() {
           ) : (
             <>
               {activeTab === 'dashboard' && renderDashboard()}
+              {activeTab === 'approvals' && <ApprovalsWorkflow applications={applications} onUpdateApplication={handleUpdateApplication} />}
               {activeTab === 'intelligence' && <IntelligenceCenter applications={applications} />}
               {activeTab === 'database' && renderDatabase()}
             </>
