@@ -260,7 +260,7 @@ export default function AdminDashboard() {
   const typeData = useMemo(() => {
     if (applications.length === 0) return [];
     const counts = applications.reduce((acc, app) => {
-      const type = app.applicant_type || 'Unknown';
+      const type = app.applicant_type || 'Unspecified';
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {});
@@ -282,8 +282,30 @@ export default function AdminDashboard() {
   const locationData = useMemo(() => {
     if (applications.length === 0) return [];
     const counts = applications.reduce((acc, app) => {
-      const loc = app.physicallocation || 'Unknown';
+      const loc = app.physicallocation || 'Unspecified';
       acc[loc] = (acc[loc] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a,b)=> b.count - a.count).slice(0, 5);
+  }, [applications]);
+
+  // 5. Bar (Activities)
+  const activityData = useMemo(() => {
+    if (applications.length === 0) return [];
+    const counts = applications.reduce((acc, app) => {
+      const act = app.activitiesundertaken || 'Unspecified';
+      acc[act] = (acc[act] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a,b)=> b.count - a.count).slice(0, 5);
+  }, [applications]);
+
+  // 6. Bar (Materials)
+  const materialData = useMemo(() => {
+    if (applications.length === 0) return [];
+    const counts = applications.reduce((acc, app) => {
+      const mat = app.materialused || 'Unspecified';
+      acc[mat] = (acc[mat] || 0) + 1;
       return acc;
     }, {});
     return Object.keys(counts).map(k => ({ name: k, count: counts[k] })).sort((a,b)=> b.count - a.count).slice(0, 5);
@@ -419,6 +441,38 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Chart 5: Horizontal Bar (Activities) */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Top Activities</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart layout="vertical" data={activityData} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={true} vertical={false} />
+                <XAxis type="number" stroke="var(--text-secondary)" tickLine={false} axisLine={false} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" tickLine={false} axisLine={false} width={100} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Bar dataKey="count" fill="#34D399" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Chart 6: Horizontal Bar (Materials) */}
+        <div className="glass-panel">
+          <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Top Materials Used</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart layout="vertical" data={materialData} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={true} vertical={false} />
+                <XAxis type="number" stroke="var(--text-secondary)" tickLine={false} axisLine={false} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" tickLine={false} axisLine={false} width={100} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#0B0E14', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', color: '#F8FAFC' }} />
+                <Bar dataKey="count" fill="#FBBF24" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </>
   );
@@ -459,12 +513,17 @@ export default function AdminDashboard() {
         </div>
 
         <div style={{ overflowX: 'auto', padding: '1rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
             <thead>
               <tr style={{ color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                 <th style={{ padding: '1rem' }} onClick={() => requestSort('id')}>ID {getSortIcon('id')}</th>
                 <th style={{ padding: '1rem' }} onClick={() => requestSort('created_at')}>Date {getSortIcon('created_at')}</th>
+                <th style={{ padding: '1rem' }} onClick={() => requestSort('applicant_type')}>Type {getSortIcon('applicant_type')}</th>
                 <th style={{ padding: '1rem' }} onClick={() => requestSort('registeredname')}>Applicant {getSortIcon('registeredname')}</th>
+                <th style={{ padding: '1rem' }} onClick={() => requestSort('tin')}>TIN {getSortIcon('tin')}</th>
+                <th style={{ padding: '1rem' }} onClick={() => requestSort('emailaddress')}>Email {getSortIcon('emailaddress')}</th>
+                <th style={{ padding: '1rem' }} onClick={() => requestSort('activitiesundertaken')}>Activity {getSortIcon('activitiesundertaken')}</th>
+                <th style={{ padding: '1rem' }} onClick={() => requestSort('materialused')}>Material {getSortIcon('materialused')}</th>
                 <th style={{ padding: '1rem' }} onClick={() => requestSort('physicallocation')}>Location {getSortIcon('physicallocation')}</th>
                 <th style={{ padding: '1rem' }}>Docs</th>
                 <th style={{ padding: '1rem' }} onClick={() => requestSort('status')}>Status {getSortIcon('status')}</th>
@@ -472,15 +531,20 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {sortedApplications.length === 0 ? (
-                <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No records found.</td></tr>
+                <tr><td colSpan="11" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No records found.</td></tr>
               ) : sortedApplications.map(app => (
                 <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', fontSize: settings.compactMode ? '0.8rem' : '0.9rem' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                   <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>#{app.id}</td>
                   <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{new Date(app.created_at).toLocaleDateString()}</td>
-                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{app.registeredname || 'N/A'}</td>
-                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.physicallocation || 'N/A'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.applicant_type || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{app.registeredname || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.tin || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.emailaddress || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.activitiesundertaken || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.materialused || 'Unspecified'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.physicallocation || 'Unspecified'}</td>
                   <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>
                     {app.attachment_urls && app.attachment_urls.length > 0 ? (
                       <span style={{ color: 'var(--accent-primary)' }}>{app.attachment_urls.length} File(s)</span>
