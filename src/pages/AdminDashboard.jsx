@@ -13,6 +13,17 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   
+  // Settings & Notifications State
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('nids_settings')) || { autoRefresh: false, compactMode: false };
+    } catch {
+      return { autoRefresh: false, compactMode: false };
+    }
+  });
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'descending' });
@@ -27,6 +38,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchApplications();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('nids_settings', JSON.stringify(settings));
+  }, [settings]);
+
+  useEffect(() => {
+    let interval;
+    if (settings.autoRefresh) {
+      interval = setInterval(() => {
+        fetchApplications();
+      }, 30000); // 30 seconds
+    }
+    return () => clearInterval(interval);
+  }, [settings.autoRefresh]);
 
   async function fetchApplications() {
     setLoading(true);
@@ -213,6 +238,19 @@ export default function AdminDashboard() {
 
   const pendingCount = applications.filter(a => (a.status || 'Pending') === 'Pending').length;
 
+  const notificationsList = useMemo(() => {
+    const notifs = [];
+    if (pendingCount > 0) {
+      notifs.push({ id: 1, type: 'warning', text: `${pendingCount} applications require immediate resolution.`, time: 'Just now' });
+    }
+    const recentlyApproved = applications.filter(a => a.status === 'Approved').length;
+    if (recentlyApproved > 0) {
+      notifs.push({ id: 2, type: 'success', text: `${recentlyApproved} total applications have been approved.`, time: 'System' });
+    }
+    notifs.push({ id: 3, type: 'info', text: 'NIDS Secure Server connection established.', time: 'System' });
+    return notifs;
+  }, [pendingCount, applications]);
+
   const renderDashboard = () => (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
@@ -330,19 +368,19 @@ export default function AdminDashboard() {
               {sortedApplications.length === 0 ? (
                 <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No records found.</td></tr>
               ) : sortedApplications.map(app => (
-                <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', fontSize: '0.9rem' }}
+                <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', fontSize: settings.compactMode ? '0.8rem' : '0.9rem' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                  <td style={{ padding: '1rem' }}>#{app.id}</td>
-                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{new Date(app.created_at).toLocaleDateString()}</td>
-                  <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{app.registeredname || 'N/A'}</td>
-                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{app.physicallocation || 'N/A'}</td>
-                  <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>#{app.id}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{new Date(app.created_at).toLocaleDateString()}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{app.registeredname || 'N/A'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem', color: 'var(--text-secondary)' }}>{app.physicallocation || 'N/A'}</td>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>
                     {app.attachment_urls && app.attachment_urls.length > 0 ? (
                       <span style={{ color: 'var(--accent-primary)' }}>{app.attachment_urls.length} File(s)</span>
                     ) : <span style={{ color: 'var(--text-secondary)' }}>-</span>}
                   </td>
-                  <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>
                     <span style={{ padding: '0.25rem 0.75rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase', background: app.status === 'Approved' ? 'rgba(16, 185, 129, 0.1)' : app.status === 'Rejected' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: app.status === 'Approved' ? '#10b981' : app.status === 'Rejected' ? '#ef4444' : '#fcd34d' }}>
                       {app.status || 'Pending'}
                     </span>
@@ -396,12 +434,25 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="admin-header">
+        <div className="admin-header" style={{ position: 'relative' }}>
           <input type="text" className="admin-search" placeholder="Search system resources..." />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)' }}>
-              <span style={{ cursor: 'pointer' }}>🔔</span>
-              <span style={{ cursor: 'pointer' }}>⚙️</span>
+            <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', position: 'relative' }}>
+              <div 
+                style={{ cursor: 'pointer', position: 'relative', fontSize: '1.2rem' }} 
+                onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); }}
+                title="Notifications"
+              >
+                🔔
+                {pendingCount > 0 && <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'var(--error)', borderRadius: '50%', boxShadow: '0 0 5px var(--error)' }}></div>}
+              </div>
+              <div 
+                style={{ cursor: 'pointer', fontSize: '1.2rem' }} 
+                onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
+                title="System Settings"
+              >
+                ⚙️
+              </div>
             </div>
             <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }}></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -413,6 +464,60 @@ export default function AdminDashboard() {
               <button onClick={handleSignOut} style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', marginLeft: '0.5rem', fontSize: '1.2rem' }} title="Sign Out">⏏</button>
             </div>
           </div>
+          
+          {/* Notifications Modal */}
+          {showNotifications && (
+            <div className="glass-panel" style={{ position: 'absolute', top: '80px', right: '200px', width: '350px', zIndex: 50, padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', fontWeight: 'bold' }}>
+                System Notifications
+              </div>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {notificationsList.map(n => (
+                  <div key={n.id} style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: n.type === 'warning' ? 'var(--warning)' : n.type === 'success' ? 'var(--success)' : 'var(--accent-primary)', marginTop: '0.4rem' }}></div>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{n.text}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{n.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Settings Modal */}
+          {showSettings && (
+            <div className="glass-panel" style={{ position: 'absolute', top: '80px', right: '150px', width: '300px', zIndex: 50, padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', fontWeight: 'bold' }}>
+                System Settings
+              </div>
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Auto-refresh Database (30s)</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.autoRefresh} 
+                    onChange={e => setSettings({...settings, autoRefresh: e.target.checked})} 
+                    style={{ cursor: 'pointer' }}
+                  />
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>Compact Table View</span>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.compactMode} 
+                    onChange={e => setSettings({...settings, compactMode: e.target.checked})} 
+                    style={{ cursor: 'pointer' }}
+                  />
+                </label>
+                <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+                  <button onClick={() => { fetchApplications(); setShowSettings(false); }} style={{ width: '100%', background: 'var(--accent-primary)', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                    Force Sync Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="admin-content">
