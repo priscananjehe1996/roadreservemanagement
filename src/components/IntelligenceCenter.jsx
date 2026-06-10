@@ -1,13 +1,16 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { CreateMLCEngine } from '@mlc-ai/web-llm';
 
 export default function IntelligenceCenter({ applications }) {
   const [query, setQuery] = useState('');
   
   // AI Bot State
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('mowt_gemini_key') || '');
-  const [showKeySettings, setShowKeySettings] = useState(!localStorage.getItem('mowt_gemini_key'));
+  const [engine, setEngine] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [progressMsg, setProgressMsg] = useState('');
+  
   const [chatHistory, setChatHistory] = useState([
-    { role: 'model', text: 'Hello Admin. I am the MoWT Intelligence AI. I have full read-access to your database records. Ask me anything.' }
+    { role: 'model', text: 'Hello Admin. I am the MoWT Open Source Intelligence AI. I run entirely locally in your browser. I have full read-access to your database records. Ask me anything.' }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
@@ -69,20 +72,30 @@ export default function IntelligenceCenter({ applications }) {
     return flags.sort((a, b) => b.issues.length - a.issues.length);
   }, [applications]);
 
-  const handleSaveKey = (e) => {
-    e.preventDefault();
-    localStorage.setItem('mowt_gemini_key', apiKey.trim());
-    setShowKeySettings(false);
+  // -- Initialize WebLLM Engine --
+  const initializeEngine = async () => {
+    if (engine || isInitializing) return;
+    setIsInitializing(true);
+    try {
+      const initProgressCallback = (report) => {
+        setProgressMsg(report.text);
+      };
+      
+      // We use Llama-3.2-1B-Instruct-q4f16_1-MLC because it is highly capable but very lightweight (fast to download).
+      const newEngine = await CreateMLCEngine("Llama-3.2-1B-Instruct-q4f16_1-MLC", { initProgressCallback });
+      setEngine(newEngine);
+      setChatHistory(prev => [...prev, { role: 'model', text: 'System initialized. Open Source LLM is online and ready for queries.' }]);
+    } catch (err) {
+      setChatHistory(prev => [...prev, { role: 'model', text: `ERROR Initializing LLM: ${err.message}. Your device might not support WebGPU.` }]);
+    } finally {
+      setIsInitializing(false);
+    }
   };
 
-  // -- Gemini LLM Engine --
+  // -- Local LLM Query --
   const handleQuery = async (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    if (!apiKey) {
-      setShowKeySettings(true);
-      return;
-    }
+    if (!query.trim() || !engine) return;
     
     const userMessage = query.trim();
     setQuery('');
@@ -100,32 +113,27 @@ export default function IntelligenceCenter({ applications }) {
       }));
 
       const systemPrompt = `You are the MoWT (Ministry of Works and Transport) AI Database Assistant. 
-You are securely analyzing a database of Road Reserve Permit Applications. 
+You are analyzing a database of Road Reserve Permit Applications. 
 Here is the current database JSON data:
 ${JSON.stringify(simplifiedApps)}
 
-Answer the user's question accurately based ONLY on this data. Format your response cleanly. You can use markdown bullet points. Keep it concise, helpful, and professional.`;
+Answer the user's question accurately based ONLY on this data. Format your response cleanly using markdown bullet points. Keep it concise, helpful, and professional.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt + "\n\nUser Query: " + userMessage }] }],
-          generationConfig: { temperature: 0.1 }
-        })
+      // Structure messages for WebLLM chat.completions
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ];
+
+      const reply = await engine.chat.completions.create({
+        messages,
+        temperature: 0.1
       });
 
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error.message || "API Error");
-      }
-
-      const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I was unable to analyze the data.";
+      const botReply = reply.choices[0].message.content || "I was unable to analyze the data.";
       setChatHistory(prev => [...prev, { role: 'model', text: botReply }]);
     } catch (err) {
-      setChatHistory(prev => [...prev, { role: 'model', text: `ERROR: ${err.message}. Please check your API key.` }]);
-      if (err.message.toLowerCase().includes('api key')) setShowKeySettings(true);
+      setChatHistory(prev => [...prev, { role: 'model', text: `ERROR: ${err.message}.` }]);
     } finally {
       setIsTyping(false);
     }
@@ -137,12 +145,9 @@ Answer the user's question accurately based ONLY on this data. Format your respo
         <h2 style={{ color: '#34d399', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span>👁️</span> Central Intelligence Engine
         </h2>
-        <button 
-          onClick={() => setShowKeySettings(!showKeySettings)}
-          style={{ background: 'transparent', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', padding: '0.25rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
-        >
-          {showKeySettings ? 'Close AI Settings' : 'AI Settings'}
-        </button>
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          Powered by Open Source Local AI
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
@@ -198,29 +203,35 @@ Answer the user's question accurately based ONLY on this data. Format your respo
 
       {/* AI Chat Terminal */}
       <div style={{ background: 'rgba(0,0,0,0.5)', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid #1e293b', marginTop: '2rem', display: 'flex', flexDirection: 'column', height: '500px' }}>
-        <h3 style={{ color: '#38bdf8', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>🤖</span> AI_QUERY_TERMINAL
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ color: '#38bdf8', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>🤖</span> LOCAL_LLM_TERMINAL
+          </h3>
+          {engine && <span style={{ color: '#34d399', fontSize: '0.75rem', border: '1px solid #34d399', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>Model Ready</span>}
+        </div>
         
-        {showKeySettings ? (
+        {!engine ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '8px', padding: '2rem' }}>
-            <div style={{ maxWidth: '400px', width: '100%' }}>
-              <h4 style={{ color: 'white', marginBottom: '0.5rem' }}>Setup AI Connection</h4>
+            <div style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+              <h4 style={{ color: 'white', marginBottom: '0.5rem' }}>Initialize Open Source AI</h4>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-                To enable the Intelligent LLM Chatbot, securely provide your Google Gemini API Key. This key is saved locally in your browser and never leaves your device.
+                Click below to load the Llama 3 LLM directly into your browser's memory using WebGPU. No API keys required. 
+                (Note: ~1GB initial download required).
               </p>
-              <form onSubmit={handleSaveKey}>
-                <input 
-                  type="password" 
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter Gemini API Key..."
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--accent-primary)', background: 'black', color: 'white', marginBottom: '1rem' }}
-                />
-                <button type="submit" style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: 'none', background: 'var(--accent-primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Save Key & Initialize
+              
+              {!isInitializing ? (
+                <button 
+                  onClick={initializeEngine}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: 'none', background: 'var(--accent-primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Load Local LLM Engine
                 </button>
-              </form>
+              ) : (
+                <div style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', color: 'var(--accent-primary)', fontSize: '0.85rem', textAlign: 'left', wordBreak: 'break-all' }}>
+                  <div style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>Loading Model...</div>
+                  {progressMsg || "Initializing WebGPU..."}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -229,7 +240,7 @@ Answer the user's question accurately based ONLY on this data. Format your respo
               {chatHistory.map((msg, idx) => (
                 <div key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', textAlign: msg.role === 'user' ? 'right' : 'left', textTransform: 'uppercase' }}>
-                    {msg.role === 'user' ? 'Admin' : 'MoWT AI'}
+                    {msg.role === 'user' ? 'Admin' : 'Local AI'}
                   </div>
                   <div style={{ 
                     padding: '0.8rem 1rem', 
@@ -247,7 +258,7 @@ Answer the user's question accurately based ONLY on this data. Format your respo
               ))}
               {isTyping && (
                 <div style={{ alignSelf: 'flex-start' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', textTransform: 'uppercase' }}>MoWT AI</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', textTransform: 'uppercase' }}>Local AI</div>
                   <div style={{ padding: '0.8rem 1rem', borderRadius: '8px', background: '#1e293b', color: '#f8fafc', fontSize: '0.9rem' }}>
                     <span style={{ animation: 'pulse 1.5s infinite' }}>Analyzing database...</span>
                   </div>
@@ -263,7 +274,7 @@ Answer the user's question accurately based ONLY on this data. Format your respo
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #38bdf8', color: '#f8fafc', fontSize: '1rem', outline: 'none', padding: '0.5rem 0', fontFamily: 'monospace' }}
-                placeholder="Ask me to summarize pending applications, find specific locations, or analyze trends..."
+                placeholder="Ask your local LLM anything about the applications..."
                 disabled={isTyping}
               />
               <button 
