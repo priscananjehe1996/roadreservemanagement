@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedReportApp, setSelectedReportApp] = useState(null);
   
   // Settings & Notifications State
   const [showNotifications, setShowNotifications] = useState(false);
@@ -533,7 +534,8 @@ export default function AdminDashboard() {
               {sortedApplications.length === 0 ? (
                 <tr><td colSpan="11" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No records found.</td></tr>
               ) : sortedApplications.map(app => (
-                <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', fontSize: settings.compactMode ? '0.8rem' : '0.9rem' }}
+                <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', fontSize: settings.compactMode ? '0.8rem' : '0.9rem', userSelect: 'none' }}
+                    onDoubleClick={() => setSelectedReportApp(app)}
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                   <td style={{ padding: settings.compactMode ? '0.5rem 1rem' : '1rem' }}>#{app.id}</td>
@@ -561,6 +563,74 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {selectedReportApp && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '0', animation: 'fadeIn 0.2s ease-out' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(56, 189, 248, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#0f172a', zIndex: 10 }}>
+              <div>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>Application #{selectedReportApp.id} Report</h2>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Submitted: {new Date(selectedReportApp.created_at).toLocaleString()}</div>
+              </div>
+              <button onClick={() => setSelectedReportApp(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '2rem', cursor: 'pointer', lineHeight: 1 }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Applicant Details</h4>
+                  <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Name:</span> {selectedReportApp.registeredname || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Type:</span> {selectedReportApp.applicant_type || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>TIN:</span> {selectedReportApp.tin || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Email:</span> {selectedReportApp.emailaddress || 'Unspecified'}</div>
+                  </div>
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Project Details</h4>
+                  <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Activity:</span> {selectedReportApp.activitiesundertaken || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Location:</span> {selectedReportApp.physicallocation || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Materials:</span> {selectedReportApp.materialused || 'Unspecified'}</div>
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Current Status:</span> <span style={{ color: selectedReportApp.status === 'Approved' ? '#10b981' : selectedReportApp.status === 'Rejected' ? '#ef4444' : '#fcd34d', fontWeight: 'bold' }}>{selectedReportApp.status || 'Pending'}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Attached Documents</h4>
+              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '2rem' }}>
+                {selectedReportApp.attachment_urls && selectedReportApp.attachment_urls.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', color: 'var(--text-secondary)' }}>
+                    {selectedReportApp.attachment_urls.map((url, i) => (
+                      <li key={i} style={{ marginBottom: '0.5rem' }}><a href={url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>View Document {i+1}</a></li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div style={{ color: 'var(--text-secondary)' }}>No documents attached.</div>
+                )}
+              </div>
+              
+              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Audit Log</h4>
+              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+                {selectedReportApp.audit_logs && selectedReportApp.audit_logs.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {selectedReportApp.audit_logs.map((log, i) => (
+                      <div key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '1rem' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(log.timestamp).toLocaleString()} - <span style={{ color: 'white' }}>{log.user}</span></div>
+                        <div style={{ fontWeight: 'bold' }}>{log.action}</div>
+                        {log.note && <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>"{log.note}"</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--text-secondary)' }}>No audit history available.</div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 
