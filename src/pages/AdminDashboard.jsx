@@ -6,6 +6,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import IntelligenceCenter from '../components/IntelligenceCenter';
 
 const COLORS = ['#fcd34d', '#10b981', '#ef4444']; // Pending (Yellow), Approved (Green), Rejected (Red)
 
@@ -294,8 +295,27 @@ export default function AdminDashboard() {
   const hasStatusData = statusData.some(d => d.value > 0);
   const displayStatusData = hasStatusData ? statusData : [{ name: 'No Data', value: 1 }];
 
+  const pendingCount = sortedApplications.filter(a => (a.status || 'Pending') === 'Pending').length;
+
   return (
     <div className="app-container" style={{ maxWidth: '1200px' }}>
+      
+      {pendingCount > 0 && (
+        <div style={{ background: '#7f1d1d', border: '2px solid #ef4444', color: 'white', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', textAlign: 'center', animation: 'pulse 2s infinite' }}>
+          <h2 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <span>⚠️</span> CRITICAL WARNING <span>⚠️</span>
+          </h2>
+          <p style={{ margin: '0.5rem 0 0 0', fontWeight: 'bold' }}>THERE ARE {pendingCount} PENDING APPLICATIONS REQUIRING IMMEDIATE RESOLUTION.</p>
+          <style>{`
+            @keyframes pulse {
+              0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+              70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            }
+          `}</style>
+        </div>
+      )}
+
       <div className="form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ textAlign: 'left', margin: 0 }}>Admin Dashboard</h1>
@@ -417,6 +437,10 @@ export default function AdminDashboard() {
             }
           </div>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '3rem' }}>
+        <IntelligenceCenter applications={applications} />
       </div>
 
       <div className="form-section">
