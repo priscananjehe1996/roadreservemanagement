@@ -391,7 +391,7 @@ export default function AdminDashboard() {
         {/* Doomsday Banner if Pending Apps Exist */}
         {pendingCount > 0 && (
           <div style={{ background: '#7f1d1d', borderBottom: '2px solid #ef4444', color: 'white', padding: '0.75rem', textAlign: 'center', animation: 'pulse 2s infinite', fontSize: '0.85rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-            ⚠️ DEFCON 1: {pendingCount} PENDING APPLICATIONS REQUIRE IMMEDIATE RESOLUTION ⚠️
+            ⚠️ {pendingCount} PENDING APPLICATIONS REQUIRE IMMEDIATE RESOLUTION ⚠️
             <style>{`@keyframes pulse { 0% { background: #7f1d1d; } 50% { background: #991b1b; } 100% { background: #7f1d1d; } }`}</style>
           </div>
         )}
