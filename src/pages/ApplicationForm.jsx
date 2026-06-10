@@ -65,7 +65,7 @@ export default function ApplicationForm() {
       <p style={{color: 'var(--text-secondary)', marginBottom: '1.5rem'}}>Please double check the details below before signing the declaration.</p>
       
       <h3 style={{color: 'var(--accent-primary)', marginBottom: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem'}}>Applicant Particulars</h3>
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem'}}>
+      <div className="form-row" style={{marginBottom: '1.5rem'}}>
         <div><strong>Registered Name:</strong> {formData.registeredname || '-'}</div>
         <div><strong>TIN:</strong> {formData.tin || '-'}</div>
         <div><strong>Email:</strong> {formData.emailaddress || '-'}</div>
@@ -73,7 +73,7 @@ export default function ApplicationForm() {
       </div>
 
       <h3 style={{color: 'var(--accent-primary)', marginBottom: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem'}}>Infrastructure Activity</h3>
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
+      <div className="form-row">
         <div><strong>Nature of Activity:</strong> {formData.natureofbillboardsignagetool || '-'}</div>
         <div><strong>Location:</strong> {formData.physicallocation || '-'}</div>
         <div><strong>Coordinates:</strong> {formData.giscoordinates || '-'}</div>
