@@ -21,7 +21,7 @@ export default function PartD_Declaration({ formData, handleChange }) {
           name="attachments" 
           onChange={handleChange} 
           multiple 
-          accept="image/*"
+          accept="image/*,application/pdf"
           style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-primary)' }}
         />
         {formData.attachments && formData.attachments.length > 0 && (
