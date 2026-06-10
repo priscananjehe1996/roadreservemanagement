@@ -12,7 +12,7 @@ export default function PartA_Applicant({ formData, handleChange }) {
 
       <div className="form-group">
         <label>Applicant Type</label>
-        <select name="applicant_type" value={formData.applicant_type || ''} onChange={handleChange} required>
+        <select name="applicant_type" value={formData.applicant_type || ''} onChange={handleChange}>
           <option value="">Select applicant type...</option>
           <option value="Government">Government</option>
           <option value="MDA">MDA (Ministries, Departments, and Agencies)</option>
@@ -30,14 +30,14 @@ export default function PartA_Applicant({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Physical Address</label>
-          <input type="text" name="physicaladdress" value={formData.physicaladdress || ''} onChange={handleChange} required placeholder="Full physical address" />
+          <input type="text" name="physicaladdress" value={formData.physicaladdress || ''} onChange={handleChange} placeholder="Full physical address" />
         </div>
       </div>
       
       <div className="form-row">
         <div className="form-group">
           <label>Email Address</label>
-          <input type="email" name="emailaddress" value={formData.emailaddress || ''} onChange={handleChange} placeholder="example@domain.com" />
+          <input type="email" name="emailaddress" value={formData.emailaddress || ''} onChange={handleChange} required placeholder="example@domain.com" />
         </div>
         <div className="form-group">
           <label>Office Tel No</label>
@@ -48,7 +48,7 @@ export default function PartA_Applicant({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>Any permit/application denied?</label>
-          <select name="yes_no" value={formData.yes_no || ''} onChange={handleChange} required>
+          <select name="yes_no" value={formData.yes_no || ''} onChange={handleChange}>
             <option value="">Select an option</option>
             <option value="yes">Yes</option>
             <option value="no">No</option>
@@ -70,11 +70,11 @@ export default function PartA_Applicant({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>Name of Contact Person</label>
-          <input type="text" name="nameofcontactperson" value={formData.nameofcontactperson || ''} onChange={handleChange} required />
+          <input type="text" name="nameofcontactperson" value={formData.nameofcontactperson || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Telephone Number</label>
-          <input type="text" name="telephonenumber" value={formData.telephonenumber || ''} onChange={handleChange} required />
+          <input type="text" name="telephonenumber" value={formData.telephonenumber || ''} onChange={handleChange} />
         </div>
       </div>
       
@@ -85,7 +85,7 @@ export default function PartA_Applicant({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Physical Address</label>
-          <input type="text" name="physicaladdresses" value={formData.physicaladdresses || ''} onChange={handleChange} required />
+          <input type="text" name="physicaladdresses" value={formData.physicaladdresses || ''} onChange={handleChange} />
         </div>
       </div>
     </div>

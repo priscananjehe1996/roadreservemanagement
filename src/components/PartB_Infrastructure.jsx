@@ -7,13 +7,13 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
       
       <div className="form-group">
         <label>Nature/name of the billboard/signage/tool/infrastructure/activity</label>
-        <input type="text" name="natureofbillboardsignagetool" value={formData.natureofbillboardsignagetool || ''} onChange={handleChange} required />
+        <input type="text" name="natureofbillboardsignagetool" value={formData.natureofbillboardsignagetool || ''} onChange={handleChange} />
       </div>
       
       <div className="form-row">
         <div className="form-group">
           <label>Physical Location</label>
-          <input type="text" name="physicallocation" value={formData.physicallocation || ''} onChange={handleChange} required />
+          <input type="text" name="physicallocation" value={formData.physicallocation || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -38,14 +38,14 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
               📍 Auto Pick Location
             </button>
           </label>
-          <input type="text" name="giscoordinates" value={formData.giscoordinates || ''} onChange={handleChange} required placeholder="-1.234, 32.345" />
+          <input type="text" name="giscoordinates" value={formData.giscoordinates || ''} onChange={handleChange} placeholder="-1.234, 32.345" />
         </div>
       </div>
       
       <div className="form-row">
         <div className="form-group">
           <label>Landmark's main location features</label>
-          <input type="text" name="landmarksmainlocationfeature" value={formData.landmarksmainlocationfeature || ''} onChange={handleChange} required />
+          <input type="text" name="landmarksmainlocationfeature" value={formData.landmarksmainlocationfeature || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Name of the closest urban council/village</label>
@@ -64,7 +64,7 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Material used for Signage or Infrastructure</label>
-          <select name="materialused" value={formData.materialused || ''} onChange={handleChange} required>
+          <select name="materialused" value={formData.materialused || ''} onChange={handleChange}>
             <option value="">Select material</option>
             <option value="Steel">Steel</option>
             <option value="Concrete">Concrete</option>
@@ -81,7 +81,7 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>Single/Double/Multi face (for adverts)</label>
-          <select name="singledoublemultiface" value={formData.singledoublemultiface || ''} onChange={handleChange} required>
+          <select name="singledoublemultiface" value={formData.singledoublemultiface || ''} onChange={handleChange}>
             <option value="">Select face type</option>
             <option value="single">Single</option>
             <option value="double">Double</option>
@@ -90,7 +90,7 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Moving/Revolving/Flashing sign</label>
-          <select name="moving_revolving_flashingsign" value={formData.moving_revolving_flashingsign || ''} onChange={handleChange} required>
+          <select name="moving_revolving_flashingsign" value={formData.moving_revolving_flashingsign || ''} onChange={handleChange}>
             <option value="">Select sign behavior</option>
             <option value="moving">Moving sign</option>
             <option value="revolving">Revolving sign</option>
@@ -101,7 +101,7 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
 
       <div className="form-group">
         <label>How is the sign/Infrastructure affixed/attached?</label>
-        <select name="signeorinfrastructureaffixed" value={formData.signeorinfrastructureaffixed || ''} onChange={handleChange} required>
+        <select name="signeorinfrastructureaffixed" value={formData.signeorinfrastructureaffixed || ''} onChange={handleChange}>
           <option value="">Select affixation method</option>
           <option value="BoltedorWelded">Bolted or Welded</option>
           <option value="Laying">Laying</option>
@@ -113,21 +113,21 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>Length (meters)</label>
-          <input type="number" step="0.01" name="lengthdimensions" value={formData.lengthdimensions || ''} onChange={handleChange} required />
+          <input type="number" step="0.01" name="lengthdimensions" value={formData.lengthdimensions || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Width (meters)</label>
-          <input type="number" step="0.01" name="widthdimension" value={formData.widthdimension || ''} onChange={handleChange} required />
+          <input type="number" step="0.01" name="widthdimension" value={formData.widthdimension || ''} onChange={handleChange} />
         </div>
       </div>
       <div className="form-row">
         <div className="form-group">
           <label>Thickness (meters)</label>
-          <input type="number" step="0.01" name="thicknessdimension" value={formData.thicknessdimension || ''} onChange={handleChange} required />
+          <input type="number" step="0.01" name="thicknessdimension" value={formData.thicknessdimension || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Height above ground level (meters)</label>
-          <input type="number" step="0.01" name="heightabovegroundlevel" value={formData.heightabovegroundlevel || ''} onChange={handleChange} required />
+          <input type="number" step="0.01" name="heightabovegroundlevel" value={formData.heightabovegroundlevel || ''} onChange={handleChange} />
         </div>
       </div>
 
@@ -135,11 +135,11 @@ export default function PartB_Infrastructure({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>Color for Letters</label>
-          <input type="text" name="colorsusedforletters" value={formData.colorsusedforletters || ''} onChange={handleChange} required />
+          <input type="text" name="colorsusedforletters" value={formData.colorsusedforletters || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Color for Figures</label>
-          <input type="text" name="colorusedforfigures" value={formData.colorusedforfigures || ''} onChange={handleChange} required />
+          <input type="text" name="colorusedforfigures" value={formData.colorusedforfigures || ''} onChange={handleChange} />
         </div>
       </div>
       

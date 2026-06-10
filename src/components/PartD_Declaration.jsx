@@ -33,7 +33,7 @@ export default function PartD_Declaration({ formData, handleChange }) {
 
       <div className="note-box" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', borderLeftColor: 'var(--success)' }}>
         <div className="checkbox-group">
-          <input type="checkbox" id="declaration" name="declaration_agreed" checked={formData.declaration_agreed || false} onChange={(e) => handleChange({ target: { name: 'declaration_agreed', value: e.target.checked } })} required />
+          <input type="checkbox" id="declaration" name="declaration_agreed" checked={formData.declaration_agreed || false} onChange={(e) => handleChange({ target: { name: 'declaration_agreed', value: e.target.checked } })} />
           <label htmlFor="declaration">I/We hereby declare that the particulars herein are true and correct and that I/We undertake to abide by the terms and conditions as stipulated by the authority.</label>
         </div>
       </div>
@@ -41,11 +41,11 @@ export default function PartD_Declaration({ formData, handleChange }) {
       <div className="form-row">
         <div className="form-group">
           <label>First Name</label>
-          <input type="text" name="firstname" value={formData.firstname || ''} onChange={handleChange} required />
+          <input type="text" name="firstname" value={formData.firstname || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Last Name</label>
-          <input type="text" name="lastname" value={formData.lastname || ''} onChange={handleChange} required />
+          <input type="text" name="lastname" value={formData.lastname || ''} onChange={handleChange} />
         </div>
       </div>
       
@@ -56,24 +56,24 @@ export default function PartD_Declaration({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Status (e.g. Director)</label>
-          <input type="text" name="applicant_role" value={formData.applicant_role || ''} onChange={(e) => handleChange({target: {name: 'applicant_role', value: e.target.value}})} required />
+          <input type="text" name="applicant_role" value={formData.applicant_role || ''} onChange={(e) => handleChange({target: {name: 'applicant_role', value: e.target.value}})} />
         </div>
       </div>
 
       <div className="form-row">
         <div className="form-group">
           <label>Date & Time</label>
-          <input type="datetime-local" name="daysdate" value={formData.daysdate || ''} onChange={handleChange} required />
+          <input type="datetime-local" name="daysdate" value={formData.daysdate || ''} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label>Place</label>
-          <input type="text" name="place" value={formData.place || ''} onChange={handleChange} required />
+          <input type="text" name="place" value={formData.place || ''} onChange={handleChange} />
         </div>
       </div>
       
       <div className="form-group">
         <label>Signature (Type full name to sign)</label>
-        <input type="text" name="signature" value={formData.signature || ''} onChange={handleChange} required style={{ fontFamily: 'cursive', fontSize: '1.2rem' }} />
+        <input type="text" name="signature" value={formData.signature || ''} onChange={handleChange} style={{ fontFamily: 'cursive', fontSize: '1.2rem' }} />
       </div>
 
       <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
