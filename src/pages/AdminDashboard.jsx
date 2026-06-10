@@ -705,7 +705,18 @@ export default function AdminDashboard() {
         )}
 
         <div className="admin-header" style={{ position: 'relative', zIndex: 100 }}>
-          <input type="text" className="admin-search" placeholder="Search system resources..." />
+          <input 
+            type="text" 
+            className="admin-search" 
+            placeholder="Search system resources..." 
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (activeTab !== 'database' && e.target.value.length > 0) {
+                setActiveTab('database');
+              }
+            }}
+          />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', position: 'relative' }}>
               <div 
