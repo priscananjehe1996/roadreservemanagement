@@ -38,7 +38,7 @@ export default function PartD_Declaration({ formData, handleChange }) {
         </div>
         <div className="form-group">
           <label>Status (e.g. Director)</label>
-          <input type="text" name="status" value={formData.status || ''} onChange={handleChange} required />
+          <input type="text" name="applicant_role" value={formData.applicant_role || ''} onChange={(e) => handleChange({target: {name: 'applicant_role', value: e.target.value}})} required />
         </div>
       </div>
 
