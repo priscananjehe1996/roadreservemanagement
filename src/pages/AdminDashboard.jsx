@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#fcd34d', '#10b981', '#ef4444']; // Pending (Yellow), Approved (Green), Rejected (Red)
@@ -8,6 +8,12 @@ const COLORS = ['#fcd34d', '#10b981', '#ef4444']; // Pending (Yellow), Approved 
 export default function AdminDashboard() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    localStorage.removeItem('admin_authenticated');
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -73,9 +79,14 @@ export default function AdminDashboard() {
           <h1 style={{ textAlign: 'left', marginBottom: '0.5rem' }}>Admin Dashboard</h1>
           <p style={{ textAlign: 'left' }}>Official review of Road Reserve applications.</p>
         </div>
-        <Link to="/" className="btn-submit" style={{ width: 'auto', padding: '0.5rem 1rem', margin: 0, textDecoration: 'none' }}>
-          &larr; Back to App
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button onClick={handleSignOut} style={{ background: 'transparent', border: '1px solid var(--error)', color: 'var(--error)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Sign Out
+          </button>
+          <Link to="/" className="btn-submit" style={{ width: 'auto', padding: '0.5rem 1rem', margin: 0, textDecoration: 'none' }}>
+            &larr; Back to App
+          </Link>
+        </div>
       </div>
 
       {/* Dashboard Stats & Charts */}
@@ -94,7 +105,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: '2rem', marginBottom: '2rem' }}>
         {/* Bar Chart */}
         <div className="form-section" style={{ margin: 0 }}>
           <h3 style={{ marginBottom: '1.5rem' }}>Applications Over Time {applications.length === 0 && <span style={{fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-secondary)', marginLeft: '1rem'}}>(Simulated Empty State)</span>}</h3>
