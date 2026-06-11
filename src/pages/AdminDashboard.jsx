@@ -627,8 +627,8 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Attached Documents</h4>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '2rem' }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Supporting Documents</h4>
+              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '1.5rem' }}>
                 {selectedReportApp.attachment_urls && selectedReportApp.attachment_urls.length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: '1.5rem', color: 'var(--text-secondary)' }}>
                     {selectedReportApp.attachment_urls.map((url, i) => {
@@ -642,7 +642,8 @@ export default function AdminDashboard() {
                   <div style={{ color: 'var(--text-secondary)' }}>No documents attached.</div>
                 )}
               </div>
-                    {userRole === 'admin' && (
+              
+              {userRole === 'admin' && (
                 <>
                   <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Audit Log</h4>
                   <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
@@ -662,7 +663,7 @@ export default function AdminDashboard() {
                   </div>
                 </>
               )}
-            </div>   </div>
+            </div>
           </div>
         </div>
       )}
