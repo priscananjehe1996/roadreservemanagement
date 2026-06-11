@@ -19,7 +19,6 @@
     "gh-pages": "^6.3.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
-    "puppeteer": "^25.1.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.17.0",
