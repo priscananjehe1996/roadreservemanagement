@@ -19,17 +19,20 @@ export default function AdminLogin() {
     await new Promise(resolve => setTimeout(resolve, 600));
 
     // Hardcoded Domain Check
-    if (!email.toLowerCase().endsWith('@unra.go.ug')) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail.endsWith('@unra.go.ug')) {
       setError('Access Denied. Only @unra.go.ug domain emails are authorized.');
       setLoading(false);
       return;
     }
 
     // Role Validation
-    if (password === 'super') {
+    if (normalizedPassword === 'super') {
       localStorage.setItem('role', 'super');
       navigate('/admin');
-    } else if (password === 'admin') {
+    } else if (normalizedPassword === 'admin') {
       localStorage.setItem('role', 'admin');
       navigate('/admin');
     } else {
