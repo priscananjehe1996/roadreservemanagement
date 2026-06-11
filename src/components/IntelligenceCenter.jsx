@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { CreateMLCEngine } from '@mlc-ai/web-llm';
 
 export default function IntelligenceCenter({ applications }) {
   const [query, setQuery] = useState('');
