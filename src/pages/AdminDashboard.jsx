@@ -33,7 +33,8 @@ export default function AdminDashboard() {
 
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('admin_authenticated');
     navigate('/login');
   };
@@ -628,9 +629,12 @@ export default function AdminDashboard() {
               <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '2rem' }}>
                 {selectedReportApp.attachment_urls && selectedReportApp.attachment_urls.length > 0 ? (
                   <ul style={{ margin: 0, paddingLeft: '1.5rem', color: 'var(--text-secondary)' }}>
-                    {selectedReportApp.attachment_urls.map((url, i) => (
-                      <li key={i} style={{ marginBottom: '0.5rem' }}><a href={url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>View Document {i+1}</a></li>
-                    ))}
+                    {selectedReportApp.attachment_urls.map((url, i) => {
+                      if (url.startsWith('LOCAL:')) {
+                        return <li key={i} style={{ marginBottom: '0.5rem', color: 'var(--success)' }}>📦 Archived Locally: <span style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{url.replace('LOCAL:', '').trim()}</span></li>
+                      }
+                      return <li key={i} style={{ marginBottom: '0.5rem' }}><a href={url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>View Document {i+1}</a></li>
+                    })}
                   </ul>
                 ) : (
                   <div style={{ color: 'var(--text-secondary)' }}>No documents attached.</div>
