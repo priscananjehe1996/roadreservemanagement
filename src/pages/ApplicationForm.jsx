@@ -11,8 +11,25 @@ export default function ApplicationForm() {
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [step, setStep] = useState(1);
+  const [secretClicks, setSecretClicks] = useState(0);
   const totalSteps = 5;
   const navigate = useNavigate();
+
+  const clickTimeout = React.useRef(null);
+
+  const handleSecretClick = () => {
+    const newCount = secretClicks + 1;
+    setSecretClicks(newCount);
+    
+    if (clickTimeout.current) clearTimeout(clickTimeout.current);
+    
+    clickTimeout.current = setTimeout(() => {
+      if (newCount >= 5) {
+        navigate('/login');
+      }
+      setSecretClicks(0);
+    }, 800);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -120,7 +137,7 @@ export default function ApplicationForm() {
   return (
     <div className="app-container">
       <div className="form-header">
-        <h1>Road Reserve Management</h1>
+        <h1 onClick={handleSecretClick} style={{ cursor: 'default', userSelect: 'none' }}>Road Reserve Management</h1>
         <p>Application for Temporary Use of National Road, Road Reserve or Ferry Landing Facility</p>
       </div>
 
