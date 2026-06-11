@@ -16,6 +16,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedReportApp, setSelectedReportApp] = useState(null);
   
+  const userRole = localStorage.getItem('role') || 'super';
+
   // Settings & Notifications State
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -640,25 +642,27 @@ export default function AdminDashboard() {
                   <div style={{ color: 'var(--text-secondary)' }}>No documents attached.</div>
                 )}
               </div>
-              
-              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Audit Log</h4>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
-                {selectedReportApp.audit_logs && selectedReportApp.audit_logs.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {selectedReportApp.audit_logs.map((log, i) => (
-                      <div key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '1rem' }}>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(log.timestamp).toLocaleString()} - <span style={{ color: 'white' }}>{log.user}</span></div>
-                        <div style={{ fontWeight: 'bold' }}>{log.action}</div>
-                        {log.note && <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>"{log.note}"</div>}
+                    {userRole === 'admin' && (
+                <>
+                  <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)', textTransform: 'uppercase', fontSize: '0.8rem' }}>Audit Log</h4>
+                  <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+                    {selectedReportApp.audit_logs && selectedReportApp.audit_logs.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {selectedReportApp.audit_logs.map((log, i) => (
+                          <div key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '1rem' }}>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(log.timestamp).toLocaleString()} - <span style={{ color: 'white' }}>{log.user}</span></div>
+                            <div style={{ fontWeight: 'bold' }}>{log.action}</div>
+                            {log.note && <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>"{log.note}"</div>}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div style={{ color: 'var(--text-secondary)' }}>No audit history available.</div>
+                    )}
                   </div>
-                ) : (
-                  <div style={{ color: 'var(--text-secondary)' }}>No audit history available.</div>
-                )}
-              </div>
-
-            </div>
+                </>
+              )}
+            </div>   </div>
           </div>
         </div>
       )}
@@ -678,12 +682,16 @@ export default function AdminDashboard() {
           <div className={`admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
             <span>📊</span> Dashboard
           </div>
-          <div className={`admin-nav-item ${activeTab === 'approvals' ? 'active' : ''}`} onClick={() => setActiveTab('approvals')}>
-            <span>✅</span> Approvals
-          </div>
-          <div className={`admin-nav-item ${activeTab === 'intelligence' ? 'active' : ''}`} onClick={() => setActiveTab('intelligence')}>
-            <span>👁️</span> Intelligence
-          </div>
+          {userRole === 'admin' && (
+            <>
+              <div className={`admin-nav-item ${activeTab === 'approvals' ? 'active' : ''}`} onClick={() => setActiveTab('approvals')}>
+                <span>✅</span> Approvals
+              </div>
+              <div className={`admin-nav-item ${activeTab === 'intelligence' ? 'active' : ''}`} onClick={() => setActiveTab('intelligence')}>
+                <span>👁️</span> Intelligence
+              </div>
+            </>
+          )}
           <div className={`admin-nav-item ${activeTab === 'database' ? 'active' : ''}`} onClick={() => setActiveTab('database')}>
             <span>🗄️</span> Database
           </div>
@@ -731,21 +739,23 @@ export default function AdminDashboard() {
                 🔔
                 {pendingCount > 0 && <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'var(--error)', borderRadius: '50%', boxShadow: '0 0 5px var(--error)' }}></div>}
               </div>
-              <div 
-                style={{ cursor: 'pointer', fontSize: '1.2rem' }} 
-                onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
-                title="System Settings"
-              >
-                ⚙️
-              </div>
+              {userRole === 'admin' && (
+                <div 
+                  style={{ cursor: 'pointer', fontSize: '1.2rem' }} 
+                  onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
+                  title="System Settings"
+                >
+                  ⚙️
+                </div>
+              )}
             </div>
             <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }}></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Admin Root</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>admin@mowt.go.ug</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{userRole === 'admin' ? 'Admin Root' : 'Super User'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{userRole === 'admin' ? 'admin@mowt.go.ug' : 'super@mowt.go.ug'}</div>
               </div>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>AR</div>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>{userRole === 'admin' ? 'AR' : 'SU'}</div>
               <button onClick={handleSignOut} style={{ background: 'transparent', border: 'none', color: 'var(--error)', cursor: 'pointer', marginLeft: '0.5rem', fontSize: '1.2rem' }} title="Sign Out">⏏</button>
             </div>
           </div>

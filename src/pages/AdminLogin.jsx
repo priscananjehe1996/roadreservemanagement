@@ -3,20 +3,38 @@ import { useNavigate, Link } from 'react-router-dom';
 import highwayImg from '../assets/highway.png';
 import logoImg from '../assets/mowt.jpg';
 
-const HARDCODED_PASSWORD = 'admin';
-
 export default function AdminLogin() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === HARDCODED_PASSWORD) {
-      localStorage.setItem('admin_authenticated', 'true');
+    setLoading(true);
+    setError('');
+
+    // Simulate network delay for UX
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    // Hardcoded Domain Check
+    if (!email.toLowerCase().endsWith('@unra.go.ug')) {
+      setError('Access Denied. Only @unra.go.ug domain emails are authorized.');
+      setLoading(false);
+      return;
+    }
+
+    // Role Validation
+    if (password === 'super') {
+      localStorage.setItem('role', 'super');
+      navigate('/admin');
+    } else if (password === 'admin') {
+      localStorage.setItem('role', 'admin');
       navigate('/admin');
     } else {
-      setError('Invalid master password.');
+      setError('Invalid credentials.');
+      setLoading(false);
     }
   };
 
@@ -39,7 +57,6 @@ export default function AdminLogin() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Subtle grid background pattern */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           backgroundImage: 'linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px)',
@@ -65,7 +82,6 @@ export default function AdminLogin() {
           }
         `}</style>
         
-        {/* Dark overlay to blend edges */}
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, transparent 40%, #050B14 100%)', zIndex: 2 }}></div>
       </div>
 
@@ -100,53 +116,58 @@ export default function AdminLogin() {
         
         <div style={{ color: 'var(--accent-primary)', marginBottom: '3rem', fontSize: '1rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
           Ministry of Works and Transport <br />
-          <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>Department of National Roads</span>
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>UNRA Secure Portal</span>
         </div>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '400px' }}>
           
           <div style={{ position: 'relative' }}>
-            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>User name</label>
+            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Email Address</label>
             <input 
-              type="text" 
-              value="admin_root"
-              disabled
-              style={{
-                width: '100%', background: 'transparent', border: 'none', borderBottom: '2px solid rgba(255,255,255,0.1)',
-                color: 'var(--text-secondary)', padding: '0.5rem 0', fontSize: '1rem', outline: 'none'
-              }} 
-            />
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Password</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="first.lastname@unra.go.ug"
+              required
               style={{
                 width: '100%', background: 'transparent', border: 'none', borderBottom: '2px solid rgba(56, 189, 248, 0.5)',
                 color: 'var(--text-primary)', padding: '0.5rem 0', fontSize: '1rem', outline: 'none',
                 transition: 'border-color 0.3s'
               }} 
-              autoFocus
             />
           </div>
 
-          {error && <div style={{ color: 'var(--error)', fontSize: '0.85rem' }}>{error}</div>}
+          <div style={{ position: 'relative' }}>
+            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Security Token</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              style={{
+                width: '100%', background: 'transparent', border: 'none', borderBottom: '2px solid rgba(56, 189, 248, 0.5)',
+                color: 'var(--text-primary)', padding: '0.5rem 0', fontSize: '1rem', outline: 'none',
+                transition: 'border-color 0.3s'
+              }} 
+            />
+          </div>
+
+          {error && <div style={{ color: 'var(--error)', fontSize: '0.85rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.75rem', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>{error}</div>}
 
           <button 
             type="submit" 
+            disabled={loading}
             style={{
               marginTop: '1rem', background: 'linear-gradient(90deg, var(--accent-hover), var(--accent-primary))',
               color: 'white', border: 'none', padding: '1rem 2rem', width: 'fit-content', borderRadius: '4px',
-              fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 20px rgba(56, 189, 248, 0.4)', transition: 'transform 0.2s'
+              fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 0 20px rgba(56, 189, 248, 0.4)', transition: 'transform 0.2s',
+              opacity: loading ? 0.7 : 1
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+            onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
+            onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
           >
-            Sign In
+            {loading ? 'Authenticating...' : 'Secure Sign In'}
           </button>
         </form>
 
